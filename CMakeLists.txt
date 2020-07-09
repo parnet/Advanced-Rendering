@@ -17,6 +17,6 @@ add_executable(${PROJECT_NAME}
         src/RT.cpp
         libs/lodepng/lodepng.h
         libs/lodepng/lodepng.cc
-        )
+        src/environment.cpp src/environment.h)
 
 target_link_libraries(${PROJECT_NAME} glm)
