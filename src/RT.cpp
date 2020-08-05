@@ -170,9 +170,26 @@ int main(int argc, char *argv[]) {
 
     }
 
+
+    /*{
+        GeometricObject *p_ConeA = new Cone();
+        matrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f))
+                 * glm::rotate(glm::mat4(1.0f), 1.0f * pi, glm::vec3(0.1f, 0.7f, 0.5f));
+
+        auto translationmatrix = glm::translate(matrix, glm::vec3(+0.0f, +0.0f, +0.0f));
+
+        p_ConeA->inverse_modelling_matrix = translationmatrix;
+        p_ConeA->normal_matrix = glm::transpose(matrix);
+        p_ConeA->mat_color = Color(0.3, 1.0, 1);
+        p_ConeA->phong_factor = PHONG_FACTOR;
+
+        scene.emplace_back(p_ConeA);
+    }*/
+
+
     { //// rounded cube
 
-        GeometricObject *p_CubeD = new Cube();//new Torus(TORUS_r);
+        GeometricObject *p_CubeD = new CenteredCube();//new Torus(TORUS_r);
         matrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 2.0f))
                  * glm::rotate(glm::mat4(1.0f), 0.0f * pi, glm::vec3(0.1f, 0.7f, 0.5f));
 
@@ -183,8 +200,8 @@ int main(int argc, char *argv[]) {
         p_CubeD->mat_color = Color(0.3, 0.6, 1);
         p_CubeD->phong_factor = PHONG_FACTOR;
 
-        GeometricObject *p_CubeC = new Cube();//new Torus(TORUS_r);
-        matrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 2.0f))
+        GeometricObject *p_CubeC = new CenteredCube();//new Torus(TORUS_r);
+        matrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f))
                  * glm::rotate(glm::mat4(1.0f), 0.0f * pi, glm::vec3(0.1f, 0.7f, 0.5f));
 
          translationmatrix = glm::translate(matrix, glm::vec3(+1.0f, +0.0f, +0.0f));
@@ -194,9 +211,9 @@ int main(int argc, char *argv[]) {
         p_CubeC->mat_color = Color(0.3, 0.6, 1);
         p_CubeC->phong_factor = PHONG_FACTOR;
 
-            GeometricObject *p_CubeB = new Cube();//new Torus(TORUS_r);
+            GeometricObject *p_CubeB = new CenteredCube();//new Torus(TORUS_r);
             matrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 2.0f))
-                    * glm::rotate(glm::mat4(1.0f), 0.0f * pi, glm::vec3(0.1f, 0.7f, 0.5f));
+                    * glm::rotate(glm::mat4(1.0f), 0.0f * pi, glm::vec3(0.1f, -0.7f, 0.5f));
 
             translationmatrix = glm::translate(matrix, glm::vec3(+0.0f, +0.0f, +0.0f));
 
@@ -206,7 +223,7 @@ int main(int argc, char *argv[]) {
             p_CubeB->phong_factor = PHONG_FACTOR;
 
                 // create second cube
-        GeometricObject *p_CubeA = new Cube();//new Torus(TORUS_r);
+        GeometricObject *p_CubeA = new CenteredCube();//new Torus(TORUS_r);
         matrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 2.0f))
                  * glm::rotate(glm::mat4(1.0f), 0.0f * pi, glm::vec3(0.1f, 0.7f, 0.5f));
 
@@ -245,7 +262,7 @@ int main(int argc, char *argv[]) {
         pSphereA->phong_factor = PHONG_FACTOR;
 
         GeometricObject *pCylinder = new Cylinder();//new Torus(TORUS_r);
-        matrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.5, 1.5f, 1.5f))
+        matrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.5, 1.5f, 0.7f))
                  * glm::rotate(glm::mat4(1.0f), 1.0f * pi, glm::vec3(1.0f, 0.0f, 1.0f));
 
         translationmatrix = glm::translate(matrix, glm::vec3(0.0f, +0.25f, 0.0f));
@@ -279,7 +296,7 @@ int main(int argc, char *argv[]) {
         ttS->phong_factor = PHONG_FACTOR -15;
         scene.emplace_back(ttS);
 
-            //scene.emplace_back(p_CubeB);*/
+            //scene.emplace_back(p_CubeB);/
 
     }
 

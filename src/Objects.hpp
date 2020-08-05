@@ -183,11 +183,15 @@ public:
         coefficient[2] = a2 - 1;
         number = Solve_Polynomial(2, coefficient, root, TRUE, 1.0e-5);
         if (number > 0) {
-            if (root[0] > root[1]) { // swap so that t[i] < t[j] for all i < j
+            if (number == 1){
+                root[1] = root[0]; // assign point for csg interval (open, close)
+                number++;
+            } else if (root[0] > root[1]) { // swap so that t[i] < t[j] for all i < j
                 tmp = root[1];
                 root[1] = root[0];
                 root[0] = tmp;
             };
+
             for (unsigned char i = 0; i < number; i++)
                 cache[i] = root[i];
             //printf ("Anzahl: %d  Schnittpunkte: %f, %f, %f, %f\n", number, t[0], t[1], t[2], t[3]);
@@ -263,19 +267,38 @@ public:
         coefficient[2] = a2;
         number = Solve_Polynomial(2, coefficient, root, TRUE, 1.0e-5);
 
+        // do not use values for the upper half of the cone and do not extend further than a const value
         if (number > 1) {
-            if (root[1] < 0.0 || origin.z + root[1] * direction.z > 0.0 /*|| origin.z + root[1] * direction.z < -1.0*/) {
+            if (root[1] < 0.0 || origin.z + root[1] * direction.z > 0.0  || origin.z + root[1] * direction.z < -1.0) {
                 root[1] = 0.0;
                 number--;
             }
         }
         if (number > 0) {
-            if (root[0] < 0.0 || origin.z + root[0] * direction.z > 0.0 /*|| origin.z + root[0] * direction.z < -1.0*/) {
+            if (root[0] < 0.0 || origin.z + root[0] * direction.z > 0.0  || origin.z + root[0] * direction.z < -1.0 ) {
                 root[0] = 0.0;
                 number--;
             }
         }
-        if(number > 1) {
+
+
+        double tc = (-1.0 - origin.z) / direction.z;
+        double ia = origin.x + tc*direction.x;
+        double ib = origin.y + tc*direction.y;
+        if(ia*ia + ib*ib <= 1.0){
+            root[number] = tc;
+            //std::cout << "x1." << tc;
+            number++;
+        }
+
+
+
+
+        if(number == 1){
+            root[1] = root[0];
+            number++;
+        }
+        if(number > 1) { // sort intersectionpoints to get the minimal distance to the viewer
             if (root[0] > root[1]) {
                 //std::cout << "#";
                 dummy = root[1];
@@ -291,12 +314,10 @@ public:
             }
 
             if(origin.z + root[0] * direction.z >= 0.0) {
-                std::cout << root[0] << "\t" << origin.z + root[0] * direction.z << std::endl;
-                printf ("Anzahl: %d  Schnittpunkte: %f, %f, %f, %f\n", number, cache[0], cache[1], cache[2], cache[3]);
+                //std::cout << root[0] << "\t" << origin.z + root[0] * direction.z << std::endl;
+                //printf ("Anzahl: %d  Schnittpunkte: %f, %f, %f, %f\n", number, cache[0], cache[1], cache[2], cache[3]);
 
             }
-
-
         }
         this->cachesize = number;
         return number;
@@ -313,6 +334,7 @@ public:
         origin = inverse_modelling_matrix * origin; //Transformation aus der Szene
         direction = inverse_modelling_matrix * direction; // in die Objektkoordinaten
 
+
         /* Calculate nearest intersection  */
         intersection.x = origin.x + direction.x * t;
         intersection.y = origin.y + direction.y * t;
@@ -320,9 +342,15 @@ public:
 
         //print("intr",intersection);
         /* Calculate a Cone normal */
-        normal.x = intersection.x;
-        normal.y = intersection.y;
-        normal.z = -intersection.z;
+        if(intersection.z <= -1.0 + 1e-7){
+            normal.x = 0;
+            normal.y = 0;
+            normal.z = -1;
+        } else {
+            normal.x = intersection.x;
+            normal.y = intersection.y;
+            normal.z = -intersection.z;
+        }
         //print("nrm", normal);
         //print("nrmm", normal_matrix);
         normal = glm::normalize(
@@ -467,6 +495,143 @@ public:
     };
 };
 
+
+
+
+class CenteredCube : public GeometricObject {
+private:
+public:
+    CenteredCube() = default;
+
+    int trace_ray(glm::vec4 origin, glm::vec4 direction) override {
+        cache = new double[4];
+        int number; //Number of intersections
+        double tmp;
+        origin = inverse_modelling_matrix * origin;       //Transformation aus der Szene
+        direction = inverse_modelling_matrix * direction;    // in die Objektkoordinaten
+        //cout << "origin: " << origin.x << "  " << origin.y << "  "  << origin.z << "  " << endl;
+        //cout << "direction: "  << direction.x  << "  " << direction.y  << "  "  << direction.z  << "  " << endl;
+
+        /* Calculate terms for intersection calculation */
+        number = 0;
+        double ia;
+        double ib;
+        double tc;
+
+        double upper = 1.0;
+        double lower = -1.0;
+
+        tc = (upper - origin.x) / direction.x;
+        ia = origin.y + tc*direction.y;
+        ib = origin.z + tc*direction.z;
+        if(ia >=  lower && ia <= upper && ib >= lower && ib <= upper){
+            cache[number] = tc;
+            //std::cout << "x1." << tc;
+            number++;
+        }
+
+        tc = (lower - origin.x) / direction.x;
+        ia = origin.y + tc*direction.y;
+        ib = origin.z + tc*direction.z;
+        if(ia >= lower && ia <= upper && ib >= lower && ib <= upper){
+            cache[number] = tc;
+            //std::cout << "x0.";
+            number++;
+        }
+
+
+        tc = (upper - origin.y) / direction.y;
+        ia = origin.x + tc*direction.x;
+        ib = origin.z + tc*direction.z;
+        if(ia >= lower && ia <= upper && ib >= lower && ib <= upper){
+            cache[number] = tc;
+            //std::cout << "y1.";
+            number++;
+        }
+
+        tc = (lower - origin.y) / direction.y;
+        ia = origin.x + tc*direction.x;
+        ib = origin.z + tc*direction.z;
+        if(ia >= lower && ia <= upper && ib >= lower && ib <= upper){
+            cache[number] = tc;
+            //std::cout << "y0.";
+            number++;
+        }
+
+
+        tc = (upper - origin.z) / direction.z;
+        ia = origin.y + tc*direction.y;
+        ib = origin.x + tc*direction.x;
+        if(ia >= lower && ia <= upper && ib >= lower && ib <= upper){
+            cache[number] = tc;
+            //std::cout << "z1.";
+            number++;
+        }
+
+        tc = (lower - origin.z) / direction.z;
+        ia = origin.y + tc*direction.y;
+        ib = origin.x + tc*direction.x;
+        if(ia >= lower && ia <= upper && ib >= lower && ib <= upper){
+            cache[number] = tc;
+            //std::cout << "z0.";
+            number++;
+        }
+
+        if (number > 0) {
+            //printf ("Anzahl: %d  Schnittpunkte: %f, %f, %f, %f\n", number, t[0], t[1], t[2], t[3]);
+            if(cache[1] < cache[0]){
+                tmp = cache[1];
+                cache[1] = cache[0];
+                cache[0] = tmp;
+            }
+        };
+        this->cachesize = number;
+        return number;
+    };
+
+    glm::vec4 get_normal(glm::vec4 origin, glm::vec4 direction, double t) override {
+        double eps = 1e-4;
+        glm::vec4 normal = glm::vec4(0.0, 0.0, 0.0, 0.0);
+        glm::vec4 intersection;
+        glm::vec4 temp;// Intersections
+
+        origin = inverse_modelling_matrix * origin; //Transformation aus der Szene
+        direction = inverse_modelling_matrix * direction; // in die Objektkoordinaten
+
+        /* Calculate nearest intersection  */
+        intersection.x = origin.x + direction.x * t;
+        intersection.y = origin.y + direction.y * t;
+        intersection.z = origin.z + direction.z * t;
+
+        //print(intersection);
+        normal.x = +0.0;
+        normal.y = +0.0;
+        normal.z = +0.0;
+
+        if (fabs(intersection.x+1.0) < eps) { // x component approx 0.0
+            normal.x = -1.0;
+        } else if (fabs(intersection.x - 1.0) < eps) { // xcomponent approx 1.0
+            normal.x = +1.0;
+        } else if (fabs(intersection.y + 1.0)< eps) {
+            normal.y = -1.0;
+        } else if (fabs(intersection.y - 1.0) < eps) {
+            normal.y = +1.0;
+        } else if (fabs(intersection.z + 1.0)< eps) {
+            normal.z = -1.0;
+        } else if (fabs(intersection.z - 1.0) < eps) {
+            normal.z = +1.0;
+        }
+        //print(normal);
+        /* Calculate a Sphere normal */
+        normal = glm::normalize(normal_matrix * normal);           //Transformation in die Szene mit transponiert-inverser Matrix
+        return normal;
+    };
+
+    void clean() override {
+        delete this->cache;
+    };
+};
+
 class Cylinder : public GeometricObject {
 private:
 public:
@@ -498,31 +663,53 @@ public:
         coefficient[1] = 2 * au;
         coefficient[2] = a2 - 1;
         number = Solve_Polynomial(2, coefficient, root, TRUE, 1.0e-5);
+
         if (number > 1) {
-            /*if (origin.z + direction.z * root[1] > 1.0 || origin.z + direction.z * root[1] < -1.0) {
+            if (origin.z + direction.z * root[1] > 1.0 || origin.z + direction.z * root[1] < -1.0) {
                 root[1] = 0.0;
                 number--;
-            }*/
+            }
         }
-        if (number > 0) {
-            /*if (origin.z + direction.z * root[0] > 1.0 || origin.z + direction.z * root[0] < -1.0) {
+        if(number > 0){
+            if (origin.z + direction.z * root[0] > 1.0 || origin.z + direction.z * root[0] < -1.0) {
                 root[0] = root[1];
                 root[1] = 0.0;
                 number--;
-            } else {*/
-                if (root[0] > root[1]) {
+            }
+        }
+
+        double tc = (-1.0 - origin.z) / direction.z;
+        double ia = origin.x + tc*direction.x;
+        double ib = origin.y + tc*direction.y;
+        if(ia*ia + ib*ib <= 1.0){
+            root[number] = tc;
+            //std::cout << "x1." << tc;
+            number++;
+        }
+
+        tc = (+1.0 - origin.z) / direction.z;
+        ia = origin.x + tc*direction.x;
+        ib = origin.y + tc*direction.y;
+        if(ia*ia + ib*ib <= 1.0){
+            root[number] = tc;
+            //std::cout << "x1." << tc;
+            number++;
+        }
+
+         if(number > 1) {
+             if (root[0] > root[1]) {
                     dummy = root[1];
                     root[1] = root[0];
                     root[0] = dummy;
                 };
-            /*}*/
+            }
+
             for (unsigned char i = 0; i < number; i++) {
                 cache[i] = root[i];
             }
             if (number != 0) {
                 //printf("Anzahl: %d  Schnittpunkte: %f, %f, %f, %f\n", number, t[0], t[1], t[2], t[3]);
             }
-        };
         this->cachesize = number;
         return number;
     };
@@ -540,10 +727,21 @@ public:
         intersection.y = origin.y + direction.y * t;
         intersection.z = origin.z + direction.z * t;
 
+        if (intersection.z >= +1-1e-7){
+            normal.x = 0;
+            normal.y = 0;
+            normal.z = -1;
+        } else  if (intersection.z <= -1+1e-7){
+            normal.x = 0;
+            normal.y = 0;
+            normal.z = -1;
+        }  else {
+            normal.x = intersection.x;
+            normal.y = intersection.y;
+            normal.z = 0;
+        }
         /* Calculate a Sphere normal */
-        normal.x = intersection.x;
-        normal.y = intersection.y;
-        normal.z = 0;
+
         normal = glm::normalize(
                 normal_matrix * normal);           //Transformation in die Szene mit transponiert-inverser Matrix
 
