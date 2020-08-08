@@ -367,7 +367,9 @@ public:
 class Cube : public GeometricObject {
 private:
 public:
-    Cube() = default;
+    Cube() : GeometricObject(){
+    std::cout <<"warning non centered cube ";
+    };
 
     int trace_ray(glm::vec4 origin, glm::vec4 direction) override {
         cache = new double[4];

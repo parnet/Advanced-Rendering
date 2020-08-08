@@ -628,19 +628,20 @@ int main(int argc, char *argv[]) {
             cPropulsorRightModule->normal_matrix = glm::transpose(matrix);
 
             auto *cAx = new CSGTree(OP::UNION, cBridgeModule, cHangarModule);
-            auto *cBx = new CSGTree(OP::UNION, cPropulsorLeftModule, cPropulsorRightModule);
+            //auto cAx = cBridgeModule;
+            //auto *cBx = new CSGTree(OP::UNION, cPropulsorLeftModule, cPropulsorRightModule);
 
-            auto *cTx = new CSGTree(OP::UNION, cAx, cBx);
+            auto *cTx = cAx;//new CSGTree(OP::UNION, cAx, cBx);
 
 
-            double dhx = 0;
-            double dhy = 0;
-            double dhz = 0;
-            double sx = 10;
-            double sy = 0.5;
-            double sz = 1.0;
+            double dhx = 1.85;
+            double dhy = 0.23;
+            double dhz = 0.5;
+            double sx = 14;
+            double sy = 1.6;
+            double sz = 20.0;
 
-            GeometricObject *pConnPropulsorHangarLeft = new Cube();
+            GeometricObject *pConnPropulsorHangarLeft = new CenteredCube();
             matrix = glm::scale(glm::mat4(1.0f), glm::vec3(sx, sy, sz))
                      * glm::rotate(glm::mat4(1.0f), 0.25f * pi, glm::vec3(1.0f, 0.0f, 0.0f));
 
@@ -650,11 +651,11 @@ int main(int argc, char *argv[]) {
             pConnPropulsorHangarLeft->mat_color = Color(1, 0.5, 0);
             pConnPropulsorHangarLeft->phong_factor = PHONG_FACTOR;
 
-            GeometricObject *pConnPropulsorHangarRight = new Cube();
+            GeometricObject *pConnPropulsorHangarRight = new CenteredCube();
             matrix = glm::scale(glm::mat4(1.0f), glm::vec3(sx, sy, sz))
                      * glm::rotate(glm::mat4(1.0f), -0.25f * pi, glm::vec3(1.0f, 0.0f, 0.0f));
 
-            translationmatrix = glm::translate(matrix, glm::vec3(-dhx, dhy, dhz));
+            translationmatrix = glm::translate(matrix, glm::vec3(dhx, dhy, -dhz));
             pConnPropulsorHangarRight->inverse_modelling_matrix = translationmatrix;
             pConnPropulsorHangarRight->normal_matrix = glm::transpose(matrix);
             pConnPropulsorHangarRight->mat_color = Color(1, 0.5, 0);
@@ -665,16 +666,27 @@ int main(int argc, char *argv[]) {
             auto *cConnPHL = new CSGTree(pConnPropulsorHangarLeft);
             auto *cConnPHR = new CSGTree(pConnPropulsorHangarRight);
 
-            auto * cATx = new CSGTree(OP::UNION, cConnPHL, cConnPHR);
-            auto * cCx = new CSGTree(OP::UNION, cATx, cTx);
+            GeometricObject *pConnBH = new CenteredCube();
+            matrix = glm::scale(glm::mat4(1.0f), glm::vec3(sx, sy, sz))
+                     * glm::rotate(glm::mat4(1.0f), 0.25f * pi, glm::vec3(1.0f, 0.0f, 0.0f));
 
-            short rotation = 0; // 1 top, 2 front , 3, 4
+            translationmatrix = glm::translate(matrix, glm::vec3(dhx, dhy, dhz));
+            pConnBH->inverse_modelling_matrix = translationmatrix;
+            pConnBH->normal_matrix = glm::transpose(matrix);
+            pConnBH->mat_color = Color(1, 0.5, 0);
+            pConnBH->phong_factor = PHONG_FACTOR;
+            auto *cConnBH = new CSGTree(pConnBH);
+
+            //auto * cATx = new CSGTree(OP::UNION, cConnPHL, cConnPHR);
+            auto * cCx = new CSGTree(OP::UNION, cConnBH, cTx);
+
+            short rotation = 2; // 1 top, 2 front , 3 side, 4
 
 
             if (rotation == 1) {
                 matrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.5, 1.5f, 1.5f))
                          * glm::rotate(glm::mat4(1.0f), -0.5f * pi, glm::vec3(1.0f, 0.0f, 0.0f));
-                translationmatrix = glm::translate(matrix, glm::vec3(0.0f, 1.74f / 2.0f, +0.0f));
+                translationmatrix = glm::translate(matrix, glm::vec3(0.0f, 0, 2.0f));
                 cCx->mat_color = Color(0.8, 0.8, 0.8);
                 cCx->phong_factor = PHONG_FACTOR;
                 cCx->inverse_modelling_matrix = translationmatrix;
@@ -682,7 +694,7 @@ int main(int argc, char *argv[]) {
             } else if (rotation == 2) {
                 matrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.5, 1.5f, 1.5f))
                          * glm::rotate(glm::mat4(1.0f), +0.5f * pi, glm::vec3(0.0f, 1.0f, 0.0f));
-                translationmatrix = glm::translate(matrix, glm::vec3(0.0f, 1.74f / 2.0f, +0.0f));
+                translationmatrix = glm::translate(matrix, glm::vec3(0.0f, -0.5, -4.0f));
                 cCx->mat_color = Color(0.8, 0.8, 0.8);
                 cCx->phong_factor = PHONG_FACTOR;
                 cCx->inverse_modelling_matrix = translationmatrix;
@@ -690,15 +702,15 @@ int main(int argc, char *argv[]) {
             } else if (rotation == 3) {
                 matrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.5, 1.5f, 1.5f))
                          * glm::rotate(glm::mat4(1.0f), 0.0f * pi, glm::vec3(0.0f, 0.0f, 1.0f));
-                translationmatrix = glm::translate(matrix, glm::vec3(0.0f, 1.74f / 2.0f, +0.0f));
+                translationmatrix = glm::translate(matrix, glm::vec3(0.0f, 0, -4.0f));
                 cCx->mat_color = Color(0.8, 0.8, 0.8);
                 cCx->phong_factor = PHONG_FACTOR;
                 cCx->inverse_modelling_matrix = translationmatrix;
                 cCx->normal_matrix = glm::transpose(matrix);
             } else if (rotation == 4) {
                 matrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.5, 1.5f, 1.5f))
-                         * glm::rotate(glm::mat4(1.0f), -0.25f * pi, glm::vec3(1.0f, 1.0f, 0.0f));
-                translationmatrix = glm::translate(matrix, glm::vec3(0.0f, 1.74f / 2.0f, +0.0f));
+                         * glm::rotate(glm::mat4(1.0f), +0.25f * pi, glm::vec3(1.0f, 0.5f, 0.0f));
+                translationmatrix = glm::translate(matrix, glm::vec3(0.0f, 0, -1.0f));
                 cCx->mat_color = Color(0.8, 0.8, 0.8);
                 cCx->phong_factor = PHONG_FACTOR;
                 cCx->inverse_modelling_matrix = translationmatrix;
