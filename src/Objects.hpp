@@ -55,11 +55,11 @@ public:
 };
 
 class Torus : public GeometricObject {
-private:
+
+public:
     double rad_R = 1.0;
     double rad_r = 0.1;
 
-public:
     Torus() = default;
 
     explicit Torus(double r) {
@@ -276,7 +276,7 @@ public:
         }
         if (number > 0) {
             if (root[0] < 0.0 || origin.z + root[0] * direction.z > 0.0  || origin.z + root[0] * direction.z < -1.0 ) {
-                root[0] = 0.0;
+                root[0] = root[1];
                 number--;
             }
         }
