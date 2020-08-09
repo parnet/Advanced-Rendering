@@ -4,9 +4,9 @@
 #define IMAGE_WIDTH  2048
 #define IMAGE_HEIGHT 2048
 
-#define BACKGROUND_COLOR_R 100
-#define BACKGROUND_COLOR_G 100
-#define BACKGROUND_COLOR_B 100
+#define BACKGROUND_COLOR_R 31
+#define BACKGROUND_COLOR_G 22
+#define BACKGROUND_COLOR_B 22
 #define BACKGROUND_COLOR_A 255
 
 
@@ -43,6 +43,8 @@
 
 #include "Objects.hpp"                  //Class Definitions and Include-Files for HSRT
 #include "environment.h"
+#include <chrono>
+#include <ctime>
 
 
 int main(int argc, char *argv[]) {
@@ -55,6 +57,8 @@ int main(int argc, char *argv[]) {
     // create a scene to store all geometric objects
     std::vector<GeometricObject *> scene;
     glm::mat4 matrix;
+
+    auto start = std::chrono::system_clock::now();
 
     /*{   // create first object (torus)
         GeometricObject *p_Object = new Torus(TORUS_r);
@@ -281,47 +285,61 @@ int main(int argc, char *argv[]) {
 
     }*/
 
-    /*{
-        GeometricObject *p_Planet = new Sphere();
+    {
+        GeometricObject *p_Planet_00 = new Sphere();
         matrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f))
                  * glm::rotate(glm::mat4(1.0f), 0.0f * pi, glm::vec3(0.1f, 0.7f, 0.5f));
 
-        auto translationmatrix = glm::translate(matrix, glm::vec3(-10.0f, +0.0f, +30.0f));
+        auto translationmatrix = glm::translate(matrix, glm::vec3(-0.0f, +0.0f, +0.0f));
 
-        p_Planet->inverse_modelling_matrix = translationmatrix;
-        p_Planet->normal_matrix = glm::transpose(matrix);
-        p_Planet->mat_color = Color(0.3, 1.0, 1);
-        p_Planet->phong_factor = PHONG_FACTOR;
+        p_Planet_00->inverse_modelling_matrix = translationmatrix;
+        p_Planet_00->normal_matrix = glm::transpose(matrix);
+        p_Planet_00->mat_color = Color(0.3, 1.0, 1);
+        p_Planet_00->phong_factor = PHONG_FACTOR;
 
-        scene.emplace_back(p_Planet);
-
-        GeometricObject *p_Ring = new Torus();
+        GeometricObject *p_Ring_00 = new Torus();
         matrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.3f, 0.3f, 4.f))
-                 * glm::rotate(glm::mat4(1.0f), 4.f/3.f * pi, glm::vec3(1.0f, 0.0f, 0.0f));
+                 * glm::rotate(glm::mat4(1.0f), 4.f / 3.f * pi, glm::vec3(1.0f, 0.0f, 0.0f));
 
-        translationmatrix = glm::translate(matrix, glm::vec3(-10.0f, +0.0f, +30.0f));
+        translationmatrix = glm::translate(matrix, glm::vec3(-0.0f, +0.0f, +0.0f));
 
-        p_Ring->inverse_modelling_matrix = translationmatrix;
-        p_Ring->normal_matrix = glm::transpose(matrix);
-        p_Ring->mat_color = Color(0.3, 1.0, 1);
-        p_Ring->phong_factor = PHONG_FACTOR;
+        p_Ring_00->inverse_modelling_matrix = translationmatrix;
+        p_Ring_00->normal_matrix = glm::transpose(matrix);
+        p_Ring_00->mat_color = Color(0.3, 1.0, 1);
+        p_Ring_00->phong_factor = PHONG_FACTOR;
 
-        scene.emplace_back(p_Ring);
-
-        GeometricObject *p_secRing = new Torus(0.075);
+        GeometricObject *p_secRing_00 = new Torus(0.075);
         matrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.23f, 0.23f, 4.f))
-                 * glm::rotate(glm::mat4(1.0f), 4.f/3.f * pi, glm::vec3(1.0f, 0.0f, 0.0f));
+                 * glm::rotate(glm::mat4(1.0f), 4.f / 3.f * pi, glm::vec3(1.0f, 0.0f, 0.0f));
 
-        translationmatrix = glm::translate(matrix, glm::vec3(-10.0f, +0.0f, +30.0f));
+        translationmatrix = glm::translate(matrix, glm::vec3(-0.0f, +0.0f, +0.0f));
 
-        p_secRing->inverse_modelling_matrix = translationmatrix;
-        p_secRing->normal_matrix = glm::transpose(matrix);
-        p_secRing->mat_color = Color(0.3, 1.0, 1);
-        p_secRing->phong_factor = PHONG_FACTOR;
+        p_secRing_00->inverse_modelling_matrix = translationmatrix;
+        p_secRing_00->normal_matrix = glm::transpose(matrix);
+        p_secRing_00->mat_color = Color(0.3, 1.0, 1);
+        p_secRing_00->phong_factor = PHONG_FACTOR;
 
-        scene.emplace_back(p_secRing);
+        auto *c_planet = new CSGTree(p_Planet_00);
+        auto *c_innter_ring = new CSGTree(p_Ring_00);
+        auto *c_outer_ring = new CSGTree(p_secRing_00);
+        auto *rings = new CSGTree(OP::UNION, c_innter_ring, c_outer_ring);
+        auto *planet = new CSGTree(OP::UNION, rings, c_planet);
 
-    }*/
+
+        matrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f, 0.2f, 0.2))
+                 * glm::rotate(glm::mat4(1.0f), 0 * pi, glm::vec3(1.0, 0.0f, 0.0f));
+
+        translationmatrix = glm::translate(matrix, glm::vec3(-10.0f, -8.0f, 50.0f));
+
+        planet->inverse_modelling_matrix = translationmatrix;
+        planet->normal_matrix = glm::transpose(matrix);
+        planet->mat_color = Color(0.427450980, 0.5921568, 0.8901960);
+        planet->phong_factor = 100000000;
+
+
+        scene.emplace_back(planet);
+
+    }
 
     { // Bridge
         CSGTree *cBridgeModule = nullptr;
@@ -389,9 +407,28 @@ int main(int argc, char *argv[]) {
         p_secRing->mat_color = Color(0.3, 1.0, 1);
         p_secRing->phong_factor = PHONG_FACTOR;
 
+
+        //TopSphere
+        GeometricObject *p_top = new Sphere();
+        matrix = glm::scale(glm::mat4(1.0f), glm::vec3(8.0f, 8.0f, 8.0f))
+                 * glm::rotate(glm::mat4(1.0f), 0 * pi, glm::vec3(1.0, 0.0f, 0.0f));
+
+        translationmatrix = glm::translate(matrix, glm::vec3(0.0, -.12f, 0.0f));
+
+        p_top->inverse_modelling_matrix = translationmatrix;
+        p_top->normal_matrix = glm::transpose(matrix);
+        p_top->mat_color = Color(0.3, 1.0, 1);
+        p_top->phong_factor = PHONG_FACTOR;
+
+
+
         auto *cUppBridge = new CSGTree(p_BridgeSupplT);
         auto *cIntersect = new CSGTree(p_secRing);
+        auto *cTop = new CSGTree(p_top);
         auto *cUpperPart = new CSGTree(OP::Intersection, cUppBridge, cIntersect);
+        cUpperPart = new CSGTree(OP::UNION, cUpperPart, cTop);
+
+
 
         /*matrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0, 1.0f, 1.0f))
                  * glm::rotate(glm::mat4(1.0f), -0.3f * pi, glm::vec3(1.0f, 1.0f, 0.0f));
@@ -400,6 +437,8 @@ int main(int argc, char *argv[]) {
         cBridgeModule->mat_color = Color(0.3, 0.6, 1);
         cBridgeModule->phong_factor = PHONG_FACTOR - 15;*/
         cBridgeModule = new CSGTree(OP::UNION, cUpperPart, cA);
+
+        //scene.emplace_back(p_top);
 
         // Propulsor Left
         {
@@ -592,7 +631,24 @@ int main(int argc, char *argv[]) {
             auto *cHangerCutout = new CSGTree(p_HangarCutout);
             cHangarModule = new CSGTree(OP::MINUS, cHangarDecor, cHangerCutout);
 
-            // todo satellit / antenne
+
+            // todo satellite / antenne
+            GeometricObject *p_satellite = new Cone();
+            matrix = glm::scale(glm::mat4(1.0f), glm::vec3(6, 6, 6))
+                     * glm::rotate(glm::mat4(1.0f), .5f * pi, glm::vec3(0.0, 1.0f, 0.0f));
+
+            translationmatrix = glm::translate(matrix, glm::vec3(-0.22f, 0.0f, .0f));
+            //translationmatrix = glm::translate(matrix, glm::vec3(0.7, 0.58f, .0f));
+
+            p_satellite->inverse_modelling_matrix = translationmatrix;
+            p_satellite->normal_matrix = glm::transpose(matrix);
+            p_satellite->mat_color = Color(0.2, 0.2, 0.2);
+            p_satellite->phong_factor = PHONG_FACTOR;
+
+            auto *c_satellite = new CSGTree(p_satellite);
+            cHangarModule = new CSGTree(OP::UNION, cHangarModule, c_satellite);
+            //scene.emplace_back(cHangarModule);
+
         }
 
         {
@@ -627,16 +683,16 @@ int main(int argc, char *argv[]) {
             cPropulsorRightModule->inverse_modelling_matrix = translationmatrix;
             cPropulsorRightModule->normal_matrix = glm::transpose(matrix);
 
-            auto *cAx = new CSGTree(OP::UNION, cBridgeModule, cHangarModule);
+            auto *cBnH = new CSGTree(OP::UNION, cBridgeModule, cHangarModule);
             //auto cAx = cBridgeModule;
-            //auto *cBx = new CSGTree(OP::UNION, cPropulsorLeftModule, cPropulsorRightModule);
+            auto *cpropulsores = new CSGTree(OP::UNION, cPropulsorLeftModule, cPropulsorRightModule);
 
-            auto *cTx = cAx;//new CSGTree(OP::UNION, cAx, cBx);
+            //auto *cTx = cBnH;//new CSGTree(OP::UNION, cAx, cBx);
 
 
             double dhx = 1.85;
             double dhy = 0.23;
-            double dhz = 0.0;
+            double dhz = 0.5;
             double sx = 14;
             double sy = 1.6;
             double sz = 20.0;
@@ -665,22 +721,45 @@ int main(int argc, char *argv[]) {
 
             auto *cConnPHL = new CSGTree(pConnPropulsorHangarLeft);
             auto *cConnPHR = new CSGTree(pConnPropulsorHangarRight);
+            auto *cConnPH = new CSGTree(OP::UNION, cConnPHL, cConnPHR);
 
             GeometricObject *pConnBH = new CenteredCube();
             matrix = glm::scale(glm::mat4(1.0f), glm::vec3(sx, 2.8, sz))
                      * glm::rotate(glm::mat4(1.0f), 2.5f/10.0f * pi, glm::vec3(0.0f, 0.0f, 1.0f));
 
-            translationmatrix = glm::translate(matrix, glm::vec3(0.9, 0.21, 0));
+            translationmatrix = glm::translate(matrix, glm::vec3(0.9, 0.20, 0));
             pConnBH->inverse_modelling_matrix = translationmatrix;
             pConnBH->normal_matrix = glm::transpose(matrix);
             pConnBH->mat_color = Color(1, 0.5, 0);
             pConnBH->phong_factor = PHONG_FACTOR;
+
             auto *cConnBH = new CSGTree(pConnBH);
 
-            //auto * cATx = new CSGTree(OP::UNION, cConnPHL, cConnPHR);
-            auto * cCx = new CSGTree(OP::UNION, cConnBH, cTx);
+            GeometricObject *pConnBHCut = new CenteredCube();
+            matrix = glm::scale(glm::mat4(1.0f), glm::vec3(10.0f, 10.0f, 10.0f))
+                     * glm::rotate(glm::mat4(1.0f), 0.0f * pi, glm::vec3(0.0f, 0.0f, 1.0f));
 
-            short rotation = 3; // 1 top, 2 front , 3 side, 4
+            translationmatrix = glm::translate(matrix, glm::vec3(0.7, -0.1, 0));
+            pConnBHCut->inverse_modelling_matrix = translationmatrix;
+            pConnBHCut->normal_matrix = glm::transpose(matrix);
+            pConnBHCut->mat_color = Color(.66, 0.5, 0.8);
+            pConnBHCut->phong_factor = PHONG_FACTOR;
+            auto *cConnBHCut = new CSGTree(pConnBHCut);
+
+            cConnBH = new CSGTree(OP::MINUS, cConnBH, cConnBHCut);
+
+
+
+            auto * ship_propulsores = new CSGTree(OP::UNION, cPropulsorLeftModule, cPropulsorRightModule);
+            auto * ship_hangar_bridge = new CSGTree(OP::UNION, cHangarModule, cBridgeModule);
+            auto * ship_connectors = new CSGTree(OP::UNION, cConnBH, cConnPH);
+            auto * ship_propulsores_connectors = new CSGTree(OP::UNION, ship_propulsores, ship_connectors);
+            auto * ship = new CSGTree(OP::UNION, ship_hangar_bridge, ship_propulsores_connectors);
+            //auto * ship_connectors = new CSGTree(OP::UNION, ship_propulsores, cConnPH);
+            auto cCx = ship;
+
+
+            short rotation = 3; // 1: top, 2: front , 3: side, 4: angled, 5: well-positioned
 
 
             if (rotation == 1) {
@@ -702,16 +781,24 @@ int main(int argc, char *argv[]) {
             } else if (rotation == 3) {
                 matrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.5, 1.5f, 1.5f))
                          * glm::rotate(glm::mat4(1.0f), 0.0f * pi, glm::vec3(0.0f, 0.0f, 1.0f));
-                translationmatrix = glm::translate(matrix, glm::vec3(0.0f, 0, -1.0f));
+                translationmatrix = glm::translate(matrix, glm::vec3(-1.0f, 0, -1.0f));
                 cCx->mat_color = Color(0.8, 0.8, 0.8);
                 cCx->phong_factor = PHONG_FACTOR;
                 cCx->inverse_modelling_matrix = translationmatrix;
                 cCx->normal_matrix = glm::transpose(matrix);
             } else if (rotation == 4) {
                 matrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.5, 1.5f, 1.5f))
-                         * glm::rotate(glm::mat4(1.0f), +0.25f * pi, glm::vec3(1.0f, 0.5f, 0.0f));
+                         * glm::rotate(glm::mat4(1.0f), +0.25f * pi, glm::vec3(-0.1f, 0.8f, 0.1f));
                 translationmatrix = glm::translate(matrix, glm::vec3(0.0f, 0, -1.0f));
                 cCx->mat_color = Color(0.8, 0.8, 0.8);
+                cCx->phong_factor = PHONG_FACTOR;
+                cCx->inverse_modelling_matrix = translationmatrix;
+                cCx->normal_matrix = glm::transpose(matrix);
+            } else if (rotation == 5) {
+                matrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.5, 1.5f, 1.5f))
+                         * glm::rotate(glm::mat4(1.0f), +0.25f * pi, glm::vec3(-0.1f, 0.8f, 0.1f));
+                translationmatrix = glm::translate(matrix, glm::vec3(0.0f, 0, -1.0f));
+                cCx->mat_color = Color(0.5647058, 0.643137, 0.6392156);
                 cCx->phong_factor = PHONG_FACTOR;
                 cCx->inverse_modelling_matrix = translationmatrix;
                 cCx->normal_matrix = glm::transpose(matrix);
@@ -720,7 +807,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-
+    std::cout << "SCG-Tree Constructed!" << std::endl;
 
 
     /* Transform pixel increment to canvas increment; scanline order is decreasing y-coordinate */
@@ -826,6 +913,12 @@ int main(int argc, char *argv[]) {
             }
         }
     }
+
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> rt_time = end-start;
+    std::cout << "Time: " << rt_time.count() << std::endl;
+
+
     // write image to file
     lodepng_encode32_file("Image.png", image, width, height);
     cout << "Image Drawn! File Written!" << endl;
